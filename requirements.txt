@@ -2,7 +2,8 @@
 # The Python Worker is managed by Azure Functions platform
 # Manually managing azure-functions-worker may cause unexpected issues
 
-azure-functions
-azure-functions-durable
-aiohttp
-beautifulsoup4
+
+azure-functions==1.21.0
+azure-functions-durable==1.2.9
+aiohttp==3.10.6
+beautifulsoup4==4.12.3
