@@ -2,8 +2,6 @@
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 # More info on Python, GitHub Actions, and Azure Functions: https://aka.ms/python-webapps-actions
 
-
-
 name: Build and deploy Python project to Azure Function App - Depi-Scraping-FunctionApp
 
 on:
@@ -35,7 +33,6 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-
 
       # Optional: Add step to run tests here
 
@@ -71,9 +68,9 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_8D576215360A44A7936905CEDA2B78F9 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_34DF123BF986467581BB2B8B023905F7 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_2D1BEC64D0604467AA022EAA33180F93 }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_5097B2DC06F844E2BFAB96331276CB45 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_95E6B75E314D4E16912B3EFFF3E8912F }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_6AE2B4067D744B5EB2F8FDE8FBB3D4D1 }}
 
       - name: 'Deploy to Azure Functions'
         uses: Azure/functions-action@v1
