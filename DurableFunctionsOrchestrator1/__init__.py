@@ -1,12 +1,8 @@
 # DurableFunctionsOrchestrator1
-import pandas as pd
 import logging
-import random
 from datetime import timedelta
 from azure.durable_functions import DurableOrchestrationContext, Orchestrator
 import azure.durable_functions as df
-from datetime import datetime
-import os
 
 
 def orchestrator_function(context: df.DurableOrchestrationContext):
@@ -14,6 +10,14 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     input_data = context.get_input()
     start_url = input_data["start_url"]
     region = input_data["region"]
+    max_pages_str = input_data["maxpages"]
+
+    if max_pages_str is not None:  # Ensure the value is not None
+        max_pages = int(max_pages_str)  # Convert the string to an integer
+        logging.info(f"Max pages set to: max_pages, {type(max_pages)}")
+    else:
+        logging.error("max_pages not provided in the input.")
+        return  # Handle the absence of max_pages
 
     # Initialize call counts For Activity Functions
     AmazonLinks = 0
@@ -29,7 +33,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     # Loop through pages
     while current_url:
         AmazonLinks += 1  # Increment activity call count
-        result = yield context.call_activity("AmazonLinks", {"start_url": current_url, "region": region})
+        result = yield context.call_activity("AmazonLinks", {"start_url": current_url, "region": region, "max_pages": max_pages})
         links.extend(result["links"])
         pages_scraped += result["pages_scraped"]
 
@@ -41,7 +45,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         current_url = result["next_page_url"]
 
         # Add a random delay between page requests
-        yield context.create_timer(context.current_utc_datetime + timedelta(seconds=random.uniform(1, 3)))
+        # yield context.create_timer(context.current_utc_datetime + timedelta(seconds=random.uniform(1, 3)))
     logging.info(
         f"AmazonLinks completed. Pages scraped: {pages_scraped}, Links found: {len(links)}")
 
@@ -50,8 +54,8 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     scraped_data = []
     product_links = links  # Initially, all links are remaining
     # Smaller chunk size for consumption plan (around 5 pages)
-    chunk_size = 120
-    max_retries = 3  # Maximum number of retries for failed chunks
+    chunk_size = 170
+    max_retries = 3        # Maximum number of retries for failed chunks
 
     # Loop through  links to scrape product data
     while product_links:
@@ -81,7 +85,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
                     # Move the failed chunk to the end of the list after max retries
                     product_links = product_links[chunk_size:] + chunk
         # Add a random delay between chunk processing
-        yield context.create_timer(context.current_utc_datetime + timedelta(seconds=random.uniform(2, 5)))
+        # yield context.create_timer(context.current_utc_datetime + timedelta(seconds=random.uniform(2, 5)))
 
     #############################################################################################
 
@@ -96,7 +100,7 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
     # links_csv_path = save_to_csv(f"Links_{region}", links)
 
     # # # Save products data to CSV
-    data_csv_path = save_to_csv(f"Data_{region}", scraped_data)
+    # data_csv_path = save_to_csv(f"Data_{region}", scraped_data)
 
     # ##########
 
@@ -105,30 +109,30 @@ def orchestrator_function(context: df.DurableOrchestrationContext):
         "AmazonLinks": {
             "links": links,
             "pages_scraped": pages_scraped,
-            "links_found": len(links),
-            # "csv_path": links_csv_path,
+            "links_found": len(links)
+            # "csv_path": links_csv_path, # For testing
         },
         "AmazonData": {
             "scraped_data": scraped_data,
-            "remaining_links": product_links,
-            "csv_path": data_csv_path,
+            "remaining_links": product_links
+            # "csv_path": data_csv_path, # For testing
         }
     }
 
+# For testing
+# def save_to_csv(region, links):
+#     # Generate a unique filename
+#     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+#     filename = f"{region}_pages_{timestamp}.csv"
+#     filepath = os.path.join(os.path.dirname(__file__), filename)
 
-def save_to_csv(region, links):
-    # Generate a unique filename
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = f"{region}_pages_{timestamp}.csv"
-    filepath = os.path.join(os.path.dirname(__file__), filename)
+#     # Create a DataFrame from the links
+#     df = pd.DataFrame(links)
 
-    # Create a DataFrame from the links
-    df = pd.DataFrame(links)
+#     # Save the DataFrame to a CSV file using UTF-8 encoding
+#     df.to_csv(filepath, index=False, encoding="utf-8")
 
-    # Save the DataFrame to a CSV file using UTF-8 encoding
-    df.to_csv(filepath, index=False, encoding="utf-8")
-
-    return filepath
+#     return filepath
 
 
 main = Orchestrator.create(orchestrator_function)

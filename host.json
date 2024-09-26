@@ -18,6 +18,5 @@
         "type": "AzureStorage"
       }
     }
-  },
-  "functionTimeout": "00:05:00"
+  }
 }

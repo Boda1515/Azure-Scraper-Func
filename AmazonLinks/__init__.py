@@ -16,9 +16,7 @@ logging.basicConfig(level=logging.INFO)
 USER_AGENTS = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:115.0) Gecko/20100101 Firefox/115.0",
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64; AppleWebKit/537.36 (KHTML, like Gecko) Chrome/100.0.4896.75 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36",
-    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; AppleWebKit/537.36 (KHTML, like Gecko) Chrome/98.0.4758.102 Safari/537.36",
-    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:91.0) Gecko/20100101 Firefox/91.0"
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 11_6_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36"
 ]
 
 
@@ -80,6 +78,7 @@ async def scrape_page_products(session, page_url, base_url):
 async def main(input: Dict[str, Any]) -> Dict[str, Any]:
     start_page_url = input['start_url']
     region = input["region"]
+    max_pages = input["max_pages"]
     all_product_links = []
     page_urls = []
     current_page_url = start_page_url
@@ -96,14 +95,14 @@ async def main(input: Dict[str, Any]) -> Dict[str, Any]:
 
     async with aiohttp.ClientSession() as session:
         start_time = time.time()
-        while True:
+        while pages_scraped < max_pages:
             products, next_page_url = await scrape_page_products(session, current_page_url, base_url)
             all_product_links.extend(products)
             page_urls.append(current_page_url)
             pages_scraped += 1
 
             elapsed_time = time.time() - start_time
-            if elapsed_time >= 240:  # 8.5 minutes
+            if elapsed_time >= 270:  # 4,5 minutes
                 logging.warning("Reached time limit, stopping the scraping.")
                 return {
                     "links": all_product_links,
@@ -118,7 +117,7 @@ async def main(input: Dict[str, Any]) -> Dict[str, Any]:
 
             current_page_url = next_page_url
             # Random sleep to avoid getting blocked
-            await asyncio.sleep(random.uniform(1, 3))
+            await asyncio.sleep(random.uniform(2, 4))
 
     logging.info(
         f"Amazon {region} Page Links: Found {len(all_product_links)} links across {pages_scraped} pages")

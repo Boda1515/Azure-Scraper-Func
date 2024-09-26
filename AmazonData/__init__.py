@@ -1,6 +1,5 @@
 # AmazonData
 import time
-import pandas as pd
 import numpy as np
 from bs4 import BeautifulSoup
 import aiohttp
@@ -190,7 +189,7 @@ async def scrape_product_data(session, product_url):
     return product_data
 
 
-async def scrape_all_products(product_links, time_limit=240):
+async def scrape_all_products(product_links, time_limit=270):
     async with aiohttp.ClientSession() as session:
         tasks = []
         start_time = time.time()
@@ -230,8 +229,8 @@ async def main(input: dict) -> dict:
 
     logging.info(f'Amazon_{region}_product_data function processing...')
     logging.info(f"Number of product links accepted: {len(product_links)}")
-    # Scrape products with a time limit of 4 minutes
-    product_data, remaining_links = await scrape_all_products(product_links, time_limit=240)
+    # Scrape products with a time limit of 4,5 minutes
+    product_data, remaining_links = await scrape_all_products(product_links, time_limit=270)
 
     # Return both the scraped data and any remaining links for the orchestrator
     return {

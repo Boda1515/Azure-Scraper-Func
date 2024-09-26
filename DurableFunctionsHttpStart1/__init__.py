@@ -15,7 +15,7 @@ async def main(req: HttpRequest, starter: str) -> HttpResponse:
 
     start_url = req_data.get("start_url")
     region = req_data.get("region")
-
+    maxpages = req_data.get("maxpages")
     if not start_url or not region:
         return HttpResponse(
             "Please pass both start_url and region in the request body",
@@ -25,7 +25,8 @@ async def main(req: HttpRequest, starter: str) -> HttpResponse:
     # Start the orchestration
     instance_id = await client.start_new("DurableFunctionsOrchestrator1", None, {
         "start_url": start_url,
-        "region": region
+        "region": region,
+        "maxpages": maxpages
     })
 
     logging.info(f"Started orchestration with ID = '{instance_id}'.")
