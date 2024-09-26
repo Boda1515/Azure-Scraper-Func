@@ -6,4 +6,3 @@ azure-functions
 azure-functions-durable
 aiohttp
 beautifulsoup4
-pandas
